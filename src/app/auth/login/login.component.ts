@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -7,9 +9,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LoginComponent implements OnInit {
 
-  constructor() { }
+  errormsg;
+
+  constructor(public authService: AuthService) { }
 
   ngOnInit() {
+  }
+
+  onSubmit(formulario) {
+    this.authService.login(formulario.email, formulario.password);
   }
 
 }
