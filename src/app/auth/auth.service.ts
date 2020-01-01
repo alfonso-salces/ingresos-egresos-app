@@ -9,8 +9,9 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { Store } from '@ngrx/store';
 import { AppState } from '../app.reducer';
 import { ActivarLoadingAction, DesactivarLoadingAction } from '../shared/ui.accions';
-import { SetUserAction } from './auth.actions';
+import { SetUserAction, UnsetUserAction } from './auth.actions';
 import { Subscription } from 'rxjs';
+import { IngresoEgresoService } from '../ingreso-egreso/ingreso-egreso.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ import { Subscription } from 'rxjs';
 export class AuthService {
 
   private userSubscription: Subscription = new Subscription();
+  private usuario: User;
 
   constructor(private angularFireAuth: AngularFireAuth, 
               private router: Router, 
@@ -33,8 +35,8 @@ export class AuthService {
         const user: User = { uid: res.user.uid, nombre: nombre, email: email};
         this.afDB.doc(`${user.uid}/usuario`).set(user)
         .then(() => {
-          this.router.navigate(['/']);
           this.store.dispatch(new DesactivarLoadingAction());
+          this.router.navigate(['/']);
         }).catch(() => this.store.dispatch(new DesactivarLoadingAction()));
       }, error => {
         this.store.dispatch(new DesactivarLoadingAction());
@@ -77,6 +79,7 @@ export class AuthService {
   logout() {
     this.angularFireAuth.auth.signOut();
     this.router.navigate(['/login']);
+    this.store.dispatch(new UnsetUserAction());
   }
 
   initAuthListner() {
@@ -84,8 +87,10 @@ export class AuthService {
       if(fbUser) {
         this.userSubscription = this.afDB.doc(`${fbUser.uid}/usuario`).valueChanges().subscribe((usuarioObj: any) => {
           this.store.dispatch(new SetUserAction(new User(usuarioObj)));
+          this.usuario = new User(usuarioObj);
         });
       } else {
+        this.usuario = null;
         this.userSubscription.unsubscribe();
       }
     });
@@ -100,6 +105,10 @@ export class AuthService {
 
         return fbUser != null;
       }));
+  }
+
+  getUsuario() {
+    return {...this.usuario};
   }
 
 }
