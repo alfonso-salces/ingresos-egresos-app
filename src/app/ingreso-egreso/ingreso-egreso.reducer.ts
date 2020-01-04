@@ -5,6 +5,10 @@ export interface IngresoEgresoState {
     items: IngresoEgreso[];
 }
 
+export interface AppState {
+    ingresoEgreso: IngresoEgresoState;
+};
+
 const estadoInicial: IngresoEgresoState = { items: [] };
 
 export function ingresoEgresoReducer(state = estadoInicial, action: fromIngresoEgreso.acciones) {
